@@ -28,7 +28,7 @@ class NegociacaoController {
         this._limpaFormulario();
     }
 
-    apaga(model) {
+    apaga() {
 
         this._listaNegociacoes.esvazia();
         this._negociacoesView.update(this._listaNegociacoes);
