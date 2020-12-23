@@ -22,6 +22,23 @@ class NegociacaoController {
         this._limpaFormulario();
     }
 
+    //prestar atenção nessa parte do codigo ***
+    // ver classe NegociacoesApi
+    importaNegociacoes() {
+
+       let xhr = new NegociacoesApi();
+       xhr.obterNegociacoesDaSemana( (erro, respostas) => {
+           if (erro) return this._mensagem.texto = erro;
+
+           respostas.forEach((resposta) => {
+               this._listaNegociacoes.adiciona(resposta);
+               this._mensagem.texto = "Negociações importadas com sucesso.";
+           });
+
+       });
+    }
+    //prestar atenção nessa parte do codigo ***
+
     apaga() {
 
         this._listaNegociacoes.esvazia();
