@@ -7,35 +7,46 @@ class NegociacaoController {
         this._inputQuantidade = $('#quantidade');
         this._inputValor = $('#valor');
 
-        this._listaNegociacoes = new Bind( new ListaNegociacoes(), new NegociacoesView($('#negociacoes-view')), 'adiciona', 'esvazia');
+        this._listaNegociacoes = new Bind(
+            new ListaNegociacoes(),
+            new NegociacoesView($('#negociacoes-view')), 'adiciona', 'esvazia','ordena','inverteOrdem');
 
-        this._mensagem = new Bind(new Mensagem(), new MensagemView($('#mensagem-view')), 'texto');
+        this._mensagem = new Bind(
+            new Mensagem(),
+            new MensagemView($('#mensagem-view')), 'texto');
+
+        this._ordemAtual = '';
     }
 
     adiciona(event) {
 
         event.preventDefault();
-        this._listaNegociacoes.adiciona(this._criaNegociacao());
 
-        this._mensagem.texto = "Negociação feita com sucesso.";
-
-        this._limpaFormulario();
+        try {
+            this._listaNegociacoes.adiciona(this._criaNegociacao());
+            this._mensagem.texto = 'Negociação adicionada com sucesso';
+            this._limpaFormulario();
+        } catch(erro) {
+            this._mensagem.texto = erro;
+        }
     }
 
     //prestar atenção nessa parte do codigo ***
     // ver classe NegociacoesApi
     importaNegociacoes() {
 
-       let xhr = new NegociacoesApi();
-       xhr.obterNegociacoesDaSemana( (erro, respostas) => {
-           if (erro) return this._mensagem.texto = erro;
+        let service = new NegociacoesApi();
 
-           respostas.forEach((resposta) => {
-               this._listaNegociacoes.adiciona(resposta);
-               this._mensagem.texto = "Negociações importadas com sucesso.";
-           });
+        service.obterNegociacoes()
+            .then(negociacoes => {
+                    negociacoes
+                        .reduce((arrayAchatado, array) => arrayAchatado.concat(array), [])
+                        .forEach((negociacao) => {
+                        this._listaNegociacoes.adiciona(negociacao)
+                    });
+                    this._mensagem.texto = "Negociações importadas com sucesso";
+            }).catch(erro => this._mensagem = erro );
 
-       });
     }
     //prestar atenção nessa parte do codigo ***
 
@@ -60,6 +71,15 @@ class NegociacaoController {
         this._inputQuantidade.value = 1;
         this._inputValor.value = 0.0;
         this._inputData.focus();
+    }
+
+    ordena(coluna) {
+        if(this._ordemAtual === coluna) {
+            this._listaNegociacoes.inverteOrdem();
+        } else {
+            this._listaNegociacoes.ordena((a, b) => a[coluna] - b[coluna]);
+        }
+        this._ordemAtual = coluna;
     }
 
 }
